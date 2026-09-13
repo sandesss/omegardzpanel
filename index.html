@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber Command Panel | EXE Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col">
+
+    <!-- Top Header Navigation -->
+    <header class="bg-slate-900 border-b border-slate-800 px-6 py-4 flex justify-between items-center shadow-lg">
+        <div class="flex items-center space-x-3">
+            <div class="bg-cyan-500/10 p-2 rounded-lg border border-cyan-500/30 text-cyan-400">
+                <i class="fa-solid fa-terminal text-xl"></i>
+            </div>
+            <div>
+                <h1 class="font-bold tracking-wider text-cyan-400 uppercase text-lg">Cyber Command Panel</h1>
+                <p class="text-xs text-slate-400">EXE User Control & Telemetry Node</p>
+            </div>
+        </div>
+        <div id="auth-status" class="flex items-center space-x-4">
+            <span class="text-xs bg-slate-800 px-3 py-1.5 rounded-full border border-slate-700 text-slate-300">
+                <i class="fa-solid fa-circle text-amber-400 text-[8px] mr-1.5"></i> Connecting...
+            </span>
+        </div>
+    </header>
+
+    <!-- Main Workspace Container -->
+    <main class="flex-1 p-6 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Left Panel: Controls & Actions (Buttons 3, 4, 5) -->
+        <div class="lg:col-span-1 space-y-6">
+            <div class="bg-slate-900/80 backdrop-blur border border-slate-800 rounded-xl p-5 shadow-xl">
+                <h2 class="text-sm font-semibold tracking-wider text-slate-400 uppercase mb-4 flex items-center">
+                    <i class="fa-solid fa-sliders text-cyan-400 mr-2"></i> EXE Master Controls
+                </h2>
+                
+                <div class="space-y-3">
+                    <!-- Button 3: Clear Files -->
+                    <button onclick="clearUserFiles()" class="w-full bg-slate-800 hover:bg-rose-950/40 border border-slate-700 hover:border-rose-500/50 text-slate-200 hover:text-rose-400 font-medium py-2.5 px-4 rounded-lg transition flex items-center justify-between text-sm group">
+                        <span class="flex items-center"><i class="fa-solid fa-trash-can mr-2.5 text-slate-400 group-hover:text-rose-400"></i> Clear Files</span>
+                        <span class="text-[10px] bg-slate-900 px-2 py-0.5 rounded text-slate-400 border border-slate-800">Cache</span>
+                    </button>
+
+                    <!-- Button 4: Fix / Unlock -->
+                    <button onclick="fixOrUnlockNode()" class="w-full bg-slate-800 hover:bg-emerald-950/40 border border-slate-700 hover:border-emerald-500/50 text-slate-200 hover:text-emerald-400 font-medium py-2.5 px-4 rounded-lg transition flex items-center justify-between text-sm group">
+                        <span class="flex items-center"><i class="fa-solid fa-unlock-keyhole mr-2.5 text-slate-400 group-hover:text-emerald-400"></i> Fix / Unlock Node</span>
+                        <span class="text-[10px] bg-slate-900 px-2 py-0.5 rounded text-slate-400 border border-slate-800">Access</span>
+                    </button>
+
+                    <!-- Button 5: Crash/Restore Internet Simulator -->
+                    <button onclick="toggleInternetKillswitch()" id="net-toggle-btn" class="w-full bg-slate-800 hover:bg-amber-950/40 border border-slate-700 hover:border-amber-500/50 text-slate-200 hover:text-amber-400 font-medium py-2.5 px-4 rounded-lg transition flex items-center justify-between text-sm group">
+                        <span class="flex items-center"><i class="fa-solid fa-wifi mr-2.5 text-slate-400 group-hover:text-amber-400" id="net-icon"></i> <span id="net-text">Crash Internet</span></span>
+                        <span class="text-[10px] bg-slate-900 px-2 py-0.5 rounded text-slate-400 border border-slate-800">Killswitch</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Current Session Info (HWID & IP - Buttons 1 & 2) -->
+            <div class="bg-slate-900/80 backdrop-blur border border-slate-800 rounded-xl p-5 shadow-xl">
+                <h2 class="text-sm font-semibold tracking-wider text-slate-400 uppercase mb-4 flex items-center">
+                    <i class="fa-solid fa-fingerprint text-cyan-400 mr-2"></i> Active Client Telemetry
+                </h2>
+                <div class="space-y-3 text-xs">
+                    <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                        <span class="text-slate-500 block mb-1">1. HWID Address (Logged on Login):</span>
+                        <span id="display-hwid" class="font-mono text-cyan-400 break-all">Awaiting authentication...</span>
+                    </div>
+                    <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                        <span class="text-slate-500 block mb-1">2. IP Address (Logged on Login):</span>
+                        <span id="display-ip" class="font-mono text-emerald-400 break-all">Resolving endpoint...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel: User Directory Log Table -->
+        <div class="lg:col-span-2 bg-slate-900/80 backdrop-blur border border-slate-800 rounded-xl p-5 shadow-xl flex flex-col">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-sm font-semibold tracking-wider text-slate-400 uppercase flex items-center">
+                    <i class="fa-solid fa-users text-cyan-400 mr-2"></i> Connected EXE Users
+                </h2>
+                <span class="text-xs bg-cyan-950/50 text-cyan-400 px-2.5 py-1 rounded border border-cyan-800/50 font-mono">Live Sync</span>
+            </div>
+
+            <div class="flex-1 overflow-x-auto rounded-lg border border-slate-800 bg-slate-950">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="border-b border-slate-800 text-slate-400 bg-slate-900/50">
+                            <th class="p-3 font-semibold">User Email / ID</th>
+                            <th class="p-3 font-semibold">HWID</th>
+                            <th class="p-3 font-semibold">IP Address</th>
+                            <th class="p-3 font-semibold">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="user-table-body" class="divide-y divide-slate-900">
+                        <tr>
+                            <td colspan="4" class="p-6 text-center text-slate-500 font-mono">No active telemetry streams found.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Firebase SDK Scripts (Modular v10) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // TODO: PALITAN ITO NG SARILI MONG FIREBASE CONFIG KEYS MULA SA STEP 1
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Generate or fetch simulated HWID for the desktop EXE client session
+        let userHWID = localStorage.getItem("exe_hwid");
+        if (!userHWID) {
+            userHWID = 'HWID-' + Math.random().toString(36).substring(2, 8).toUpperCase() + '-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+            localStorage.setItem("exe_hwid", userHWID);
+        }
+        document.getElementById('display-hwid').innerText = userHWID;
+
+        // Fetch IP Address
+        fetch('https://api.ipify.org?format=json')
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('display-ip').innerText = data.ip;
+                // Register session in Firestore upon load/login
+                registerSession(userHWID, data.ip);
+            })
+            .catch(() => {
+                document.getElementById('display-ip').innerText = '127.0.0.1 (Local)';
+                registerSession(userHWID, '127.0.0.1');
+            });
+
+        // Anonymous Sign In & Telemetry logging
+        signInAnonymously(auth).then(() => {
+            document.getElementById('auth-status').innerHTML = `
+                <span class="text-xs bg-emerald-950/60 text-emerald-400 px-3 py-1.5 rounded-full border border-emerald-800 flex items-center">
+                    <i class="fa-solid fa-circle text-emerald-400 text-[8px] mr-1.5 animate-pulse"></i> Secured Node Online
+                </span>`;
+        }).catch(err => {
+            console.error("Auth error:", err);
+        });
+
+        async function registerSession(hwid, ip) {
+            try {
+                await addDoc(collection(db, "active_sessions"), {
+                    email: "user_" + Math.floor(Math.random() * 9000 + 1000) + "@exe.local",
+                    hwid: hwid,
+                    ip: ip,
+                    status: "ACTIVE",
+                    timestamp: serverTimestamp()
+                });
+            } catch (e) {
+                console.log("Firestore sync pending:", e);
+            }
+        }
+
+        // Real-time listener for user table
+        onSnapshot(collection(db, "active_sessions"), (snapshot) => {
+            const tbody = document.getElementById('user-table-body');
+            tbody.innerHTML = "";
+            if (snapshot.empty) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-6 text-center text-slate-500 font-mono">No active streams.</td></tr>`;
+                return;
+            }
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-900/60 transition">
+                        <td class="p-3 font-mono text-slate-300">${data.email}</td>
+                        <td class="p-3 font-mono text-cyan-400">${data.hwid}</td>
+                        <td class="p-3 font-mono text-emerald-400">${data.ip}</td>
+                        <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-800">${data.status}</span></td>
+                    </tr>
+                `;
+            });
+        });
+    </script>
+
+    <!-- UI Action Script Logic -->
+    <script>
+        function clearUserFiles() {
+            if(confirm("Gusto mo bang i-clear ang mga temp files at cache ng EXE?")) {
+                alert("Successful! Na-clear na ang local files at cache.");
+            }
+        }
+
+        function fixOrUnlockNode() {
+            alert("Node successfully fixed and unlocked!");
+        }
+
+        let isInternetDown = false;
+        function toggleInternetKillswitch() {
+            isInternetDown = !isInternetDown;
+            const btnText = document.getElementById('net-text');
+            const netIcon = document.getElementById('net-icon');
+            if(isInternetDown) {
+                btnText.innerText = "Restore Internet";
+                netIcon.className = "fa-solid fa-triangle-exclamation mr-2.5 text-rose-500 animate-bounce";
+                alert("Internet connection simulated CRASHED for this client node.");
+            } else {
+                btnText.innerText = "Crash Internet";
+                netIcon.className = "fa-solid fa-wifi mr-2.5 text-amber-400";
+                alert("Internet connection RESTORED.");
+            }
+        }
+    </script>
+</body>
+</html>
