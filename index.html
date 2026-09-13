@@ -40,7 +40,7 @@
             </tr>
         </thead>
         <tbody>
-            <!-- Dito kusang papasok ang mga client mula sa Firestore -->
+            <!-- Dito papasok ang mga records -->
         </tbody>
     </table>
 </div>
@@ -107,29 +107,13 @@
                 body: JSON.stringify(payload)
             });
 
-            if (response.status === 404) {
-                let createPayload = {
-                    "fields": {
-                        "hwid": { "stringValue": hwid },
-                        "command": { "stringValue": commandAction },
-                        "status": { "stringValue": "OFFLINE" }
-                    }
-                };
-                await fetch(baseDocUrl, {
-                    method: "PATCH",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(createPayload)
-                });
-            } else if (!response.ok) {
-                alert("Failed to update command on server.");
+            if (!response.ok) {
+                alert("Failed to update command.");
                 return;
             }
-
-            console.log(`Command '${commandAction}' sent successfully to ${hwid}`);
             fetchClients();
         } catch (e) {
             console.error("Error sending command:", e);
-            alert("Connection error while sending command.");
         }
     }
 
