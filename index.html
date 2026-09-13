@@ -91,25 +91,49 @@
     }
 
     async function sendCommand(hwid, commandAction) {
-        let url = `${FIRESTORE_REST_URL}/${hwid}?updateMask.fieldPaths=command`;
-        let payload = {
-            "fields": {
-                "command": { "stringValue": commandAction }
-            }
-        };
+    let baseDocUrl = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/omegards_clients/${hwid}`;
+    let updateUrl = `${baseDocUrl}?updateMask.fieldPaths=command`;
+    
+    let payload = {
+        "fields": {
+            "command": { "stringValue": commandAction }
+        }
+    };
 
-        try {
-            await fetch(url, {
+    try {
+        // Subukan munang i-patch ang command
+        let response = await fetch(updateUrl, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+
+        // Kung sakaling wala pang document o na-delete, gawa muna bago i-update
+        if (response.status === 404) {
+            let createPayload = {
+                "fields": {
+                    "hwid": { "stringValue": hwid },
+                    "command": { "stringValue": commandAction },
+                    "status": { "stringValue": "OFFLINE" }
+                }
+            };
+            await fetch(baseDocUrl, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
+                body: JSON.stringify(createPayload)
             });
-            alert(`Command '${commandAction}' sent successfully to HWID: ${hwid}`);
-            fetchClients();
-        } catch (e) {
-            alert("Failed to send command!");
+        } else if (!response.ok) {
+            alert("Failed to update command on server.");
+            return;
         }
+
+        console.log(`Command '${commandAction}' sent successfully to ${hwid}`);
+        fetchClients();
+    } catch (e) {
+        console.error("Error sending command:", e);
+        alert("Connection error while sending command.");
     }
+}
 
     // Auto-refresh bawat 3 segundo para makita ang live status ng mga PC
     setInterval(fetchClients, 3000);
