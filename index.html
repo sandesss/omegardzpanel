@@ -20,7 +20,7 @@
         .btn-netoff { background-color: #a855f7; color: white; }
         .btn-neton { background-color: #3b82f6; color: white; }
         button:hover { opacity: 0.8; }
-    .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #64748b; }
+        .footer { text-align: center; margin-top: 20px; font-size: 12px; color: #64748b; }
     </style>
 </head>
 <body>
@@ -48,7 +48,7 @@
 <div class="footer">Omegardz Security System &copy; 2026</div>
 
 <script>
-    const PROJECT_ID = "omegards";
+    const PROJECT_ID = "omegardz";
     const FIRESTORE_REST_URL = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/omegards_clients`;
 
     async function fetchClients() {
@@ -91,51 +91,48 @@
     }
 
     async function sendCommand(hwid, commandAction) {
-    let baseDocUrl = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/omegards_clients/${hwid}`;
-    let updateUrl = `${baseDocUrl}?updateMask.fieldPaths=command`;
-    
-    let payload = {
-        "fields": {
-            "command": { "stringValue": commandAction }
-        }
-    };
+        let baseDocUrl = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents/omegards_clients/${hwid}`;
+        let updateUrl = `${baseDocUrl}?updateMask.fieldPaths=command`;
+        
+        let payload = {
+            "fields": {
+                "command": { "stringValue": commandAction }
+            }
+        };
 
-    try {
-        // Subukan munang i-patch ang command
-        let response = await fetch(updateUrl, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-        });
-
-        // Kung sakaling wala pang document o na-delete, gawa muna bago i-update
-        if (response.status === 404) {
-            let createPayload = {
-                "fields": {
-                    "hwid": { "stringValue": hwid },
-                    "command": { "stringValue": commandAction },
-                    "status": { "stringValue": "OFFLINE" }
-                }
-            };
-            await fetch(baseDocUrl, {
+        try {
+            let response = await fetch(updateUrl, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(createPayload)
+                body: JSON.stringify(payload)
             });
-        } else if (!response.ok) {
-            alert("Failed to update command on server.");
-            return;
+
+            if (response.status === 404) {
+                let createPayload = {
+                    "fields": {
+                        "hwid": { "stringValue": hwid },
+                        "command": { "stringValue": commandAction },
+                        "status": { "stringValue": "OFFLINE" }
+                    }
+                };
+                await fetch(baseDocUrl, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(createPayload)
+                });
+            } else if (!response.ok) {
+                alert("Failed to update command on server.");
+                return;
+            }
+
+            console.log(`Command '${commandAction}' sent successfully to ${hwid}`);
+            fetchClients();
+        } catch (e) {
+            console.error("Error sending command:", e);
+            alert("Connection error while sending command.");
         }
-
-        console.log(`Command '${commandAction}' sent successfully to ${hwid}`);
-        fetchClients();
-    } catch (e) {
-        console.error("Error sending command:", e);
-        alert("Connection error while sending command.");
     }
-}
 
-    // Auto-refresh bawat 3 segundo para makita ang live status ng mga PC
     setInterval(fetchClients, 3000);
     fetchClients();
 </script>
